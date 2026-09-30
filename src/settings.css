@@ -32,6 +32,7 @@ h2 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 h3 { font-size: 13px; font-weight: 600; margin: 22px 0 10px; color: #3a4050; }
 body[data-theme="dark"] h3 { color: #c6cbd8; }
 .hint { color: var(--muted); font-size: 12px; line-height: 1.7; margin-bottom: 14px; }
+.warnline { color: #cf3a63; font-size: 12px; line-height: 1.7; margin: -6px 0 12px 94px; }
 
 .row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 .row > label { width: 84px; flex-shrink: 0; color: var(--muted); font-size: 12.5px; }

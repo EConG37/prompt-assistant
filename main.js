@@ -23,6 +23,12 @@ const procStartedAt = Date.now(); // 进程启动时刻：second-instance 据此
 
 const isDev = !app.isPackaged;
 
+// 开发预览模式（PREVIEW_SETTINGS=1 npm start）：用户数据改用独立目录，
+// 与正式安装版互不干扰（单实例锁也按该目录区分，可与正式版并存）
+if (process.env.PREVIEW_SETTINGS) {
+  app.setPath('userData', path.join(app.getPath('appData'), 'prompt-assistant-preview'));
+}
+
 // 日志上限：超过就滚成 app.log.1，避免长期运行把日志写成一个巨大的文件。
 // 记录累计大小比每次 statSync 便宜；进程重启后重新按实际文件大小初始化。
 const LOG_MAX = 2 * 1024 * 1024;
@@ -844,7 +850,6 @@ function registerIpc() {
   h('env:check', async () => {
     const cfg = store.config;
     const out = {
-      node: { ok: true, detail: `内置 Node ${process.versions.node}（运行 lark-cli 无需另装 Node）` },
       cli: { ok: false, detail: '检测中…' },
       auth: { ok: false, detail: '检测中…' },
       base: { ok: false, detail: '检测中…' },
@@ -1105,6 +1110,8 @@ if (!gotLock) {
     createPanel();
     scheduleAutoSync();
     screen.on('display-metrics-changed', repositionPanel);
+    // 开发预览：PREVIEW_SETTINGS=1 npm start 启动后直接打开设置页
+    if (process.env.PREVIEW_SETTINGS) openSettings();
 
     // 首次运行（无缓存）自动同步一次
     if (!store.cache.lastSyncAt) {

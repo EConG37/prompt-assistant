@@ -24,6 +24,7 @@
       <h2>飞书多维表数据源</h2>
       <p class="hint">数据通过本机已登录的 lark-cli 读取（零配置）；修改多维表后点「立即同步」即可更新。</p>
       <div class="row"><label>多维表链接</label><input id="baseUrl" class="wide" placeholder="https://xxx.feishu.cn/base/..." /><button id="btnParse" class="btn">解析</button></div>
+      <p class="warnline">多维表链接请参考「配置与使用」中的剪藏多维表配置后使用</p>
       <div class="row"><label>lark-cli 路径</label><input id="larkCliPath" class="mid" /><label class="mini">身份</label>
         <select id="identity"><option value="user">user（我的账号）</option><option value="bot">bot（应用）</option></select>
         <button id="btnTest" class="btn">测试连接</button>
@@ -90,33 +91,19 @@
       <h2>配置与使用说明</h2>
 
       <h3>一、这套工具是怎么配合的</h3>
-      <p><b>剪藏插件负责“存”，提示词助手负责“用”</b>，二者以你自己的飞书多维表为数据中台：</p>
+      <p><b>剪藏插件负责“存”，提示词助手负责“用”</b>，二者以你自己的飞书多维表为数据中台，形成一条完整链路：</p>
       <pre class="flow">浏览器剪藏插件 ──存──▶ 飞书多维表（数据中台） ──同步──▶ 提示词助手（托盘/面板 取用·复制·预览）</pre>
+      <ul>
+        <li><b>刷网页时</b>：遇到好提示词、封面图、视频，点一下浏览器里的剪藏插件，自动写进你的多维表；</li>
+        <li><b>用 AI 时</b>：鼠标滑到屏幕右缘，提示词助手面板滑出，搜到即复制，全程不用打开网页。</li>
+      </ul>
 
-      <h3>二、首次配置（5 步，约 10 分钟）</h3>
+      <h3>二、配置剪藏插件与剪藏多维表（负责“存”）</h3>
 
       <div class="step">
         <span class="no">1</span>
         <div class="st">
-          <b>装运行环境（一键）</b>
-          <p>本工具内置运行环境，<b>不用自己装 Node</b>。打开左侧「数据源」→ 点「环境自检」→
-          点弹窗里的「<b>一键自动配置</b>」，会自动下载安装 lark-cli（约 15MB，走国内镜像）。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <span class="no">2</span>
-        <div class="st">
-          <b>登录飞书</b>
-          <p>一键自动配置过程中会自动打开飞书登录页，在浏览器里授权即可；
-          也可随时在环境自检里点「去登录」。本工具通过本机 lark-cli 的登录态读取多维表，不需要填写任何密钥。</p>
-        </div>
-      </div>
-
-      <div class="step">
-        <span class="no">3</span>
-        <div class="st">
-          <b>准备多维表</b>
+          <b>准备剪藏多维表</b>
           <p>打开说明文档里的「网页剪藏库」模板 → <b>先创建副本到自己空间</b>（复制范围选“仅结构”）。
           要给剪藏插件写入权限：飞书开放平台创建企业自建应用 → 开通
           <code>bitable:app</code>、<code>bitable:app:readonly</code>、<code>drive:file:upload</code>
@@ -125,19 +112,51 @@
       </div>
 
       <div class="step">
-        <span class="no">4</span>
+        <span class="no">2</span>
         <div class="st">
-          <b>装浏览器剪藏插件（负责“存”）</b>
+          <b>安装浏览器剪藏插件</b>
           <p>下载插件包解压 → 浏览器「扩展程序」页 → 「加载已解压的扩展程序」→ 选中解压文件夹。
           之后浏览网页遇到喜欢的提示词、封面图、视频，点一下插件即可剪藏进你的多维表。</p>
-          <p><button id="btnGuideDoc" class="btn primary docbtn">剪藏插件下载与图文教程 ↗</button></p>
+          <p><button id="btnGuideDoc" class="btn primary docbtn">剪藏插件下载与剪藏多维表配置 · 图文教程 ↗</button></p>
+        </div>
+      </div>
+
+      <h3>三、安装并登录飞书 lark-cli（负责“通”）</h3>
+
+      <div class="step">
+        <span class="no">3</span>
+        <div class="st">
+          <b>下载安装 lark-cli（一键）</b>
+          <p>本工具内置运行环境，<b>不用自己装 Node</b>。打开左侧「数据源」→ 点「环境自检」→
+          点弹窗里的「<b>一键自动配置</b>」，会自动下载安装 lark-cli（约 15MB，官方单文件程序，走国内镜像并做完整性校验）。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="no">4</span>
+        <div class="st">
+          <b>登录飞书</b>
+          <p>一键自动配置过程中会自动打开飞书登录页，在浏览器里授权即可；
+          也可随时在环境自检里点「去登录」。本工具通过本机 lark-cli 的登录态读取多维表，不需要填写任何密钥。</p>
         </div>
       </div>
 
       <div class="step">
         <span class="no">5</span>
         <div class="st">
-          <b>接入本工具，开始同步</b>
+          <b>验证登录态</b>
+          <p>回到「数据源」→「环境自检」→ 点「重新检查」：
+          「飞书登录态」一行显示 <b>✓ 已登录：你的账号</b> 即为成功；
+          显示「!」则点该行的「去登录」重试。同步读数据全靠这个登录态，务必确认通过。</p>
+        </div>
+      </div>
+
+      <h3>四、接入本工具，开始同步（负责“用”）</h3>
+
+      <div class="step">
+        <span class="no">6</span>
+        <div class="st">
+          <b>粘贴链接，接入同步</b>
           <p>复制<b>你自己那份多维表</b>的链接 → 左侧「数据源」粘贴 → 点「解析」→「立即同步」。</p>
           <ul>
             <li>表名含「提示词」的数据表会<b>自动接入</b>，字段映射自动识别，一般无需手工配置；</li>
@@ -147,7 +166,7 @@
         </div>
       </div>
 
-      <h3>三、日常怎么用</h3>
+      <h3>五、日常怎么用</h3>
       <ul>
         <li><b>打开面板</b>：鼠标移到屏幕右缘的悬浮把手 → 面板滑出；移开约半秒后自动收回，不打扰工作。
         左键托盘图标 = 固定展开 / 收起面板；</li>
@@ -159,7 +178,7 @@
         <li><b>本地条目</b>：「提示词」「常用句」标签页可新建仅存本机的内容，不写进多维表。</li>
       </ul>
 
-      <h3>四、设置页各标签速查</h3>
+      <h3>六、设置页各标签速查</h3>
       <ul>
         <li><b>数据源</b>：多维表链接解析、选择同步哪些表、字段映射、自动同步间隔、立即同步、环境自检；</li>
         <li><b>提示词</b>：浏览已同步内容、设为常用 / 复制、查看复制统计、新建本地提示词；</li>
@@ -168,7 +187,7 @@
         媒体缓存位置与无痕模式、开机自启。</li>
       </ul>
 
-      <h3>五、数据都存在哪里</h3>
+      <h3>七、数据都存在哪里</h3>
       <ul>
         <li>提示词 / 图片 / 视频原文：<b>你的飞书多维表</b>（唯一数据源，本工具只读同步，断网时用上次缓存）；</li>
         <li>设置、加星、复制统计：本机系统应用数据目录 <code>%AppData%\提示词助手</code>（不随安装包分发）；</li>
@@ -176,7 +195,7 @@
         关闭「缓存到磁盘」即无痕模式，退出自动清空。</li>
       </ul>
 
-      <h3>六、遇到问题</h3>
+      <h3>八、遇到问题</h3>
       <ul>
         <li><b>同步失败、图片裂图</b>：数据源 →「环境自检」逐项排查，或点「一键自动配置」自动修复
         （自动装 lark-cli、引导登录；lark-cli 为官方单文件程序，从国内镜像下载并做完整性校验）。

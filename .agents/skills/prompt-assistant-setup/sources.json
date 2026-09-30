@@ -1,0 +1,34 @@
+{
+  "_comment": "下载源定义。日常安装无需改本文件：download-artifact.ps1 会实时查 GitHub API 取最新 release（含镜像回退），本文件只在 GitHub API 完全不可达时充当兜底（fallback 节的版本是发布时已验证过的最后稳定版）。发新版后唯一建议维护的动作：隔段时间把 fallback 更新为最新已验证版本，让兜底不至于太旧。",
+  "promptAssistant": {
+    "name": "提示词助手",
+    "repo": "EConG37/prompt-assistant",
+    "assetPattern": "^Setup\\..+\\.exe$"
+  },
+  "webClipper": {
+    "name": "网页剪藏插件",
+    "repo": "EConG37/feishu-web-clipper",
+    "assetPattern": "^feishu-web-clipper-.+\\.zip$"
+  },
+  "fallback": {
+    "_comment": "GitHub API 不可达时的兜底版本；digest 是 GitHub 官方 release 资产的 sha256",
+    "promptAssistant": {
+      "tag": "v1.8.0",
+      "asset": "Setup.1.8.0.exe",
+      "digest": "55fbdd2442cf0b9bc5eb688ec4648ef73edee39e2d11decea05ffc7e06da22d3"
+    },
+    "webClipper": {
+      "tag": "v1.8.0",
+      "asset": "feishu-web-clipper-1.8.0.zip",
+      "digest": "ceef01b5283e690ec01b3eb10dd3a1974e814a62825f80d1d3e6dedf7c76a2be"
+    }
+  },
+  "githubMirrors": [
+    "https://ghproxy.net/",
+    "https://gh-proxy.com/",
+    "https://ghfast.top/"
+  ],
+  "apiMirrors": [
+    "https://gh-proxy.com/"
+  ]
+}

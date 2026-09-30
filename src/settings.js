@@ -235,7 +235,6 @@ function renderPhrases() {
 
 // ---------------- 环境自检弹窗 ----------------
 const ENV_LABELS = {
-  node: 'Node 运行环境',
   cli: 'lark-cli（飞书命令行）',
   auth: '飞书登录态',
   base: '多维表数据源',
@@ -258,7 +257,7 @@ async function runEnvCheck() {
       ${act}
     </div>`;
   };
-  rows.innerHTML = ['node', 'cli', 'auth', 'base', 'mediaDir'].map((k) => row(k, r[k])).join('');
+  rows.innerHTML = ['cli', 'auth', 'base', 'mediaDir'].map((k) => row(k, r[k])).join('');
   rows.onclick = async (e) => {
     const b = e.target.closest('button[data-act]');
     if (!b) return;
