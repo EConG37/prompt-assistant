@@ -92,7 +92,7 @@ function mediaHTML(p) {
   const hasImg = cfg.appearance.cardImage !== false && p.image && p.image.fileToken;
   const hasVid = !!(p.video && p.video.fileToken);
   if (!hasImg && !hasVid) {
-    return `<div class="media nomedia" title=""><span class="ph"></span>
+    return `<div class="media nomedia" title="点击预览全文"><span class="ph"></span>
       <span class="play" style="background:transparent;color:rgba(108,92,231,.55);font-size:18px">✦</span></div>`;
   }
   const imgTag = p.image && p.image.localPath
@@ -244,7 +244,7 @@ function bindMediaLazy() {
   });
 }
 
-// ---------------- 放大预览（图片 / 视频 + 全文 + 操作） ----------------
+// ---------------- 放大预览（图片 / 视频 / 纯文本 + 全文 + 操作） ----------------
 function openLightbox(src, title, opts) {
   const o = opts || {};
   lbItem = o.item || null;
@@ -252,6 +252,8 @@ function openLightbox(src, title, opts) {
   $('#lbLink').classList.toggle('hidden', !(o.item && o.item.link));
   const img = $('#lbImg');
   const vid = $('#lbVideo');
+  const textOnly = !o.video && !src; // 无图提示词：只显示全文，不占媒体区
+  $('#lightbox').classList.toggle('textonly', textOnly);
   if (o.video) {
     img.classList.add('lbmedia-hidden');
     vid.classList.remove('lbmedia-hidden');
@@ -263,8 +265,9 @@ function openLightbox(src, title, opts) {
     vid.pause();
     vid.removeAttribute('src');
     vid.classList.add('lbmedia-hidden');
-    img.classList.remove('lbmedia-hidden');
-    img.src = src;
+    img.classList.toggle('lbmedia-hidden', textOnly);
+    if (textOnly) img.removeAttribute('src');
+    else img.src = src;
   }
   $('#lbTitle').textContent = title || '';
   $('#lightbox').classList.remove('hidden');
@@ -461,6 +464,14 @@ function bind() {
   // 列表交互
   $('#list').addEventListener('click', (e) => {
     const media = e.target.closest('.media');
+    if (media && media.classList.contains('nomedia')) {
+      // 无图提示词：点 ✦ 占位块 = 预览全文（与有图卡片的“点封面图预览”同一心智；
+      // 点卡片其余位置仍是复制，不受影响）
+      const card0 = media.closest('.card');
+      const item0 = view.prompts.find((p) => p.id === (card0 && card0.dataset.id));
+      if (item0) openLightbox(null, item0.title || item0.name, { item: item0 });
+      return;
+    }
     if (media && !media.classList.contains('nomedia')) {
       const card0 = media.closest('.card');
       const item0 = (tab === 'phrase' ? view.phrases : view.prompts).find((p) => p.id === (card0 && card0.dataset.id));

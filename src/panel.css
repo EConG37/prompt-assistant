@@ -192,6 +192,8 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   text-shadow: 0 1px 4px rgba(0, 0, 0, .5);
 }
 .media .ph { position: absolute; inset: 0; background: linear-gradient(135deg, var(--acc-soft), rgba(79, 140, 255, .14)); }
+/* 无图占位块可点（打开全文预览），悬停给轻微反馈 */
+.media.nomedia:hover .ph { filter: brightness(1.07); }
 .media.loading .play { opacity: 0; }
 .media.loading::after {
   content: ''; position: absolute; inset: 0; margin: auto; width: 20px; height: 20px;
@@ -262,6 +264,9 @@ header { display: flex; align-items: center; justify-content: space-between; pad
   background: #000; border-radius: 14px; box-shadow: 0 16px 60px rgba(0, 0, 0, .55);
 }
 .lbmedia-hidden { display: none; }
+/* 纯文本预览（无图提示词）：媒体区整体让位，全文框撑满并稍放大字号 */
+.lightbox.textonly .lbmedia { display: none; }
+.lightbox.textonly .lbtext { font-size: 12.5px; line-height: 1.85; }
 .lbinfo { flex: 1 1 0; min-height: 0; width: 100%; display: flex; flex-direction: column; gap: 8px; }
 .lbhead { display: flex; align-items: center; gap: 8px; }
 .lbhead #lbTitle {
