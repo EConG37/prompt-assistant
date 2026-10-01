@@ -1,7 +1,7 @@
 {
   "name": "prompt-assistant",
   "productName": "提示词助手",
-  "version": "1.10.0",
+  "version": "2.0.0",
   "description": "常驻托盘的提示词速查/复制助手，数据来自飞书多维表",
   "main": "main.js",
   "scripts": {

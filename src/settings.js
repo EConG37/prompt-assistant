@@ -492,9 +492,7 @@ function bind() {
       btn.disabled = false;
     }
   });
-  $('#btnGuideDoc').addEventListener('click', () => {
-    window.api.openExternal('https://zk5ckzju3h.feishu.cn/docx/BIxhdJC0GoOvr3xHtDlcztIqnRd?from=from_copylink');
-  });
+  $$('.promo-card').forEach((c) => c.addEventListener('click', () => window.api.openExternal(c.dataset.url)));
   $('#btnEnvClose').addEventListener('click', () => $('#envDlg').classList.add('hidden'));
   $('#btnEnvRe').addEventListener('click', () => runEnvCheck());
   $('#launchAtLogin').addEventListener('change', (e) => look({ behavior: { ...cfg.behavior, launchAtLogin: e.target.checked } }));

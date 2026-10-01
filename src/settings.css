@@ -100,6 +100,30 @@ body[data-theme="dark"] .btn { color: #c6cbd8; }
 .origin { font-size: 10px; padding: 1.5px 7px; border-radius: 5px; background: #eef0f5; color: #7b8294; flex-shrink: 0; }
 body[data-theme="dark"] .origin { background: #2d3140; }
 
+/* 使用说明页顶部：项目地址模块 */
+.guide .promo {
+  border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 16px;
+  background: linear-gradient(135deg, rgba(79, 124, 255, .08), rgba(124, 108, 246, .05));
+  margin-bottom: 6px;
+}
+.guide .promo-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.guide .promo-no {
+  width: 26px; height: 26px; border-radius: 8px; background: var(--accent); color: #fff;
+  font-size: 12px; font-weight: 700; display: grid; place-items: center; flex-shrink: 0;
+}
+.guide .promo-title b { font-size: 14px; color: #2b3140; }
+body[data-theme="dark"] .guide .promo-title b { color: #dfe3ee; }
+.guide .promo-title p { margin: 3px 0 0; }
+.guide .promo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.guide .promo-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
+  background: var(--card); border: 1px solid var(--line); border-radius: 11px;
+  padding: 11px 13px; cursor: pointer; font-family: inherit; transition: all .15s;
+}
+.guide .promo-card:hover { border-color: var(--accent); box-shadow: 0 4px 14px rgba(79, 124, 255, .16); transform: translateY(-1px); }
+.guide .promo-card b { font-size: 12.5px; color: var(--accent); }
+.guide .promo-card span { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
 /* 使用说明页 */
 .guide h3 { margin: 20px 0 8px; font-size: 14px; color: #2b3140; }
 body[data-theme="dark"] .guide h3 { color: #dfe3ee; }
