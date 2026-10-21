@@ -26,9 +26,18 @@ cp.execFileSync('hdiutil', ['verify', dmg]);
   const env = { ...process.env, PREVIEW_SETTINGS: '1' }; delete env.ELECTRON_RUN_AS_NODE;
   const app = await _electron.launch({ executablePath: path.join(bundle, 'Contents/MacOS/提示词助手'), env, timeout: 30000 });
   const errors = []; app.on('window', page => page.on('pageerror', error => errors.push(error.message)));
+  async function findWindow(filename) {
+    for (let attempt = 0; attempt < 150; attempt++) {
+      const page = app.windows().find(page => page.url().endsWith('/' + filename));
+      if (page) { await page.waitForLoadState('domcontentloaded'); return page; }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    throw Error('Packaged window not found: ' + filename + '; loaded windows: ' + app.windows().map(page => page.url()).join(', '));
+  }
   try {
-    const panel = await app.firstWindow();
-    await panel.waitForURL('**/panel.html');
+    // Mac may finish loading the settings window first; creation order is not a contract.
+    await app.firstWindow();
+    const panel = await findWindow('panel.html');
     await panel.waitForFunction(() => !!window.api?.getData);
     const data = await panel.evaluate(() => window.api.getData());
     assert.equal(data.view.prompts.length, 0);
@@ -39,8 +48,7 @@ cp.execFileSync('hdiutil', ['verify', dmg]);
     await panel.evaluate(() => window.api.requestExpand(true));
     await panel.waitForFunction(() => getComputedStyle(document.querySelector('#panel')).opacity === '1');
     await panel.screenshot({ path: path.join(output, 'panel.png') });
-    const settings = app.windows().find(page => page.url().endsWith('/settings.html'));
-    assert(settings, 'Packaged settings did not load');
+    const settings = await findWindow('settings.html');
     await settings.waitForFunction(() => document.querySelector('#launchAtLoginLabel')?.textContent.includes('Mac'));
     assert((await settings.locator('#userDataPath').textContent()).includes('Library/Application Support'));
     await settings.screenshot({ path: path.join(output, 'settings.png') });

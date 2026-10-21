@@ -149,7 +149,7 @@ tools/gen-icon.js  托盘图标生成（纯 Node 绘制 PNG）
 
 ## macOS 支持
 
-Mac 体验版（仅 Apple Silicon / M 系列芯片）：[下载页面](https://github.com/EConG37/prompt-assistant/releases/tag/v2.9.0-beta.1)。Windows 用户继续使用上面的稳定版入口。
+Mac 体验版（仅 Apple Silicon / M 系列芯片）：[下载页面](https://github.com/EConG37/prompt-assistant/releases/tag/v2.9.0-beta.2)。Windows 用户继续使用上面的稳定版入口。
 
 - **打包**：`npx electron-builder --mac` 产出 dmg / zip；应用图标需 1024px（electron-builder 自动转 icns）
 - **图标**：双色双引号与悬浮栏保持一致；原始矢量文件为 `assets/brand.svg`，应用 PNG 为 1024px。Mac 菜单栏单独使用同字形的单色模板图标（随系统深浅色自动反色）；更新 `logo.png` 后运行 `npm run gen-icon` 与 `npm run gen-tray-template` 生成。
