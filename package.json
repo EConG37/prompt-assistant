@@ -1,14 +1,14 @@
 {
   "name": "prompt-assistant",
   "productName": "提示词助手",
-  "version": "2.8.1",
+  "version": "2.9.0-beta.1",
   "description": "常驻托盘的提示词速查/复制助手，数据来自飞书多维表",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "gen-icon": "node tools/apply-logo-icon.js",
     "gen-tray-template": "node tools/gen-tray-template.js",
-    "dist": "electron-builder --win nsis --mac",
+    "dist": "electron-builder --win nsis",
     "dist:win": "electron-builder --win nsis --x64",
     "dist:mac": "electron-builder --mac"
   },
@@ -36,15 +36,22 @@
     ],
     "mac": {
       "icon": "assets/icon.png",
+      "identity": "-",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "category": "public.app-category.productivity",
       "target": [
         {
           "target": "dmg",
-          "arch": ["arm64"]
+          "arch": [
+            "arm64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["arm64"]
+          "arch": [
+            "arm64"
+          ]
         }
       ],
       "extendInfo": {

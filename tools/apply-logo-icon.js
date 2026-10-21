@@ -1,5 +1,5 @@
 'use strict';
-// 从项目根目录 logo.png 生成应用图标：assets/icon.png(256)、assets/tray.png(32)、cache/icon.ico(多尺寸)。
+// 从项目根目录 logo.png 生成应用图标：assets/icon.png(1024)、assets/tray.png(32)、cache/icon.ico(多尺寸)。
 // 纯 Node 无第三方依赖：自带 PNG 解码/编码、白底洪水填充转透明、面积平均降采样（预乘 alpha 防边缘溢色）。
 const fs = require('fs');
 const path = require('path');

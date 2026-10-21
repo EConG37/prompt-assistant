@@ -1,8 +1,7 @@
 'use strict';
-// 从 assets/tray.png 生成 macOS 菜单栏模板图标（trayTemplate.png / @2x）。
+// 从双色双引号 logo.png 生成 macOS 菜单栏模板图标（trayTemplate.png / @2x）。
 // 模板图要求：纯黑 + alpha，系统据此在深浅色菜单栏自动反色。
-// 新 logo 是「深色圆角方块 + 白色字形」：白色字形要转为镂空（alpha=0），
-// 深色方块保持不透明——因此 alpha 由亮度反推，而不是直接沿用源图 alpha。
+// 提取白色与橙色引号、去掉黑色底板，导出同一字形的纯黑 + alpha 单色版。
 // 纯 Node 无第三方依赖：自带 PNG 解码/编码、面积平均降采样。
 const fs = require('fs');
 const path = require('path');
@@ -126,27 +125,34 @@ function downscale(srcW, srcH, src, dstW, dstH) {
   return out;
 }
 
-// 源图 → 模板图（纯黑 + 亮度反推 alpha）
+// 源图 → 模板图：沿用原字形，恢复抗锯齿覆盖率并去掉底板。
 function toTemplate(srcW, srcH, src) {
   const out = Buffer.alloc(srcW * srcH * 4);
+  let left = srcW, top = srcH, right = -1, bottom = -1;
   for (let i = 0; i < srcW * srcH; i++) {
     const o = i * 4;
     const r = src[o], g = src[o + 1], b = src[o + 2], a = src[o + 3];
-    const lum = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-    // 亮度 <128 视为实心（深色方块）；128..255 线性过渡（白色字形 → 透明）
-    const keep = lum < 128 ? 1 : Math.max(0, (255 - lum) / 127);
-    out[o] = 0; out[o + 1] = 0; out[o + 2] = 0;
-    out[o + 3] = Math.round(a * keep);
+    const foreground = r > g * 1.3 ? 237 : 255;
+    const alpha = Math.round(a * Math.max(0, Math.min(1, (r - 23) / (foreground - 23))));
+    out[o + 3] = alpha;
+    if (alpha) { const x = i % srcW, y = Math.floor(i / srcW); left = Math.min(left, x); right = Math.max(right, x); top = Math.min(top, y); bottom = Math.max(bottom, y); }
   }
-  return out;
+  if (right < left) throw Error('Logo contains no visible quotation mark');
+  const w = right - left + 1, h = bottom - top + 1, cropped = Buffer.alloc(w * h * 4);
+  for (let y = 0; y < h; y++) out.copy(cropped, y * w * 4, ((top + y) * srcW + left) * 4, ((top + y) * srcW + left + w) * 4);
+  return { w, h, rgba: cropped };
 }
 
 const ROOT = path.join(__dirname, '..');
-const SRC_PATH = path.join(ROOT, 'assets', 'tray.png');
+const SRC_PATH = path.join(ROOT, 'logo.png');
 const { w, h, rgba } = decodePNG(fs.readFileSync(SRC_PATH));
 const tpl = toTemplate(w, h, rgba);
 const outDir = path.join(ROOT, 'assets');
-// @2x 按源图尺寸（32），@1x 面积平均到 16；Electron 自动按 @2x 命名装配 Retina
-fs.writeFileSync(path.join(outDir, 'trayTemplate@2x.png'), encodePNG(w, h, tpl));
-fs.writeFileSync(path.join(outDir, 'trayTemplate.png'), encodePNG(16, 16, downscale(w, h, tpl, 16, 16)));
-console.log('generated trayTemplate.png (16x16) + trayTemplate@2x.png (' + w + 'x' + h + ')');
+for (const size of [16, 32]) {
+  const fit = (size - 2) / Math.max(tpl.w, tpl.h), dw = Math.max(1, Math.round(tpl.w * fit)), dh = Math.max(1, Math.round(tpl.h * fit));
+  const small = downscale(tpl.w, tpl.h, tpl.rgba, dw, dh), canvas = Buffer.alloc(size * size * 4);
+  const x = Math.floor((size - dw) / 2), y = Math.floor((size - dh) / 2);
+  for (let row = 0; row < dh; row++) small.copy(canvas, ((y + row) * size + x) * 4, row * dw * 4, (row + 1) * dw * 4);
+  fs.writeFileSync(path.join(outDir, size === 16 ? 'trayTemplate.png' : 'trayTemplate@2x.png'), encodePNG(size, size, canvas));
+}
+console.log('generated monochrome quotation marks: trayTemplate.png (16x16) + trayTemplate@2x.png (32x32)');

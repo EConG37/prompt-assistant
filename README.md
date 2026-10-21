@@ -149,16 +149,16 @@ tools/gen-icon.js  托盘图标生成（纯 Node 绘制 PNG）
 
 ## macOS 支持
 
-本应用同时支持 macOS（Apple Silicon）：
+Mac 体验版（仅 Apple Silicon / M 系列芯片）：[下载页面](https://github.com/EConG37/prompt-assistant/releases/tag/v2.9.0-beta.1)。Windows 用户继续使用上面的稳定版入口。
 
 - **打包**：`npx electron-builder --mac` 产出 dmg / zip；应用图标需 1024px（electron-builder 自动转 icns）
-- **菜单栏**：自动加载 `assets/trayTemplate.png` 模板图标（随系统深浅色自动反色）；
-  修改 logo 后运行 `node tools/gen-tray-template.js` 重新生成（白色字形转为镂空）
+- **图标**：双色双引号与悬浮栏保持一致；原始矢量文件为 `assets/brand.svg`，应用 PNG 为 1024px。Mac 菜单栏单独使用同字形的单色模板图标（随系统深浅色自动反色）；更新 `logo.png` 后运行 `npm run gen-icon` 与 `npm run gen-tray-template` 生成。
 - **Dock**：以 `LSUIElement` 代理应用运行（只有菜单栏图标，不占 Dock）
 - **lark-cli 探测**：图形应用继承的 PATH 较窄，应用会自动补搜 `/opt/homebrew/bin`、
   `~/.npm-global/bin` 等常见位置，并为子进程注入增强 PATH（`#!/usr/bin/env node` 脚本可正常启动）
 - **开机自启**：走 macOS 登录项（路径不加引号）；「开机自动启动」在 mac 上显示为「登录 Mac 时自动启动」
-- **首次打开**：未做开发者证书签名时，右键 .app →「打开」→ 再点「打开」
+- **首次打开**：体验版只有临时签名，没有 Apple 开发者证书或公证。首次打开可能需要在「系统设置 → 隐私与安全性」中允许本次打开。
+- **构建与验证**：`npm run dist:mac -- --publish never` 与 Windows 打包独立；GitHub 的 Mac 环境验证 ZIP 中的成品应用启动、面板、设置和 DMG 完整性，通过隐私检查后才发布预览下载包。
 
 ## 开发
 
