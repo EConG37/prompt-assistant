@@ -29,6 +29,12 @@ let ctrlHover = false; // panel:ctrlHover 上报的 Ctrl 悬停状态（当前�
 const procStartedAt = Date.now(); // 进程启动时刻：second-instance 据此区分“重复自启项”与“用户手动再开”
 
 const isDev = !app.isPackaged;
+const isMac = process.platform === 'darwin';
+
+// mac 托盘常驻应用规范：不占 Dock 位（打包版另有 LSUIElement 双保险）
+if (isMac && app.dock) {
+  try { app.dock.hide(); } catch {}
+}
 
 // 开发预览模式（PREVIEW_SETTINGS=1 npm start）：用户数据改用独立目录，
 // 与正式安装版互不干扰（单实例锁也按该目录区分，可与正式版并存）
@@ -285,8 +291,11 @@ function buildTrayMenu() {
 }
 
 function createTray() {
-  const iconPath = path.join(__dirname, 'assets', 'tray.png');
-  const icon = nativeImage.createFromPath(iconPath);
+  // mac 菜单栏必须用模板图标（纯黑+透明，文件名带 Template 自动识别），
+  // 才能随深浅色菜单栏自动反色；Windows 沿用彩色 tray.png
+  const icon = isMac
+    ? nativeImage.createFromPath(path.join(__dirname, 'assets', 'trayTemplate.png'))
+    : nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png'));
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
   tray.setToolTip(`提示词助手 v${app.getVersion()}`);
   tray.on('click', (e) => {
@@ -375,10 +384,9 @@ function applyLoginItem() {
   // 拦不住不同形态，两个把手叠在屏幕边缘互相“复活”面板，表现成永远关不掉。
   if (isDev) return;
   const on = !!(store.config.behavior && store.config.behavior.launchAtLogin);
-  const q = (p) => `"${p}"`;
   app.setLoginItemSettings({
     openAtLogin: on,
-    path: q(process.execPath),
+    path: process.platform === 'win32' ? `"${process.execPath}"` : process.execPath,
     args: [],
   });
   cleanupDuplicateLoginItems();
@@ -867,6 +875,56 @@ function buildAgentPrompt(check) {
   const portableExe = path.join(cliRuntimeDir(), process.platform === 'win32' ? 'lark-cli.exe' : 'lark-cli');
   const cfgFile = path.join(app.getPath('userData'), 'config.json');
   const bt = '`'; // 模板里要输出 markdown 行内代码的反引号
+  if (isMac) {
+    const archName = process.arch === 'arm64' ? 'arm64' : 'amd64';
+    return (
+`你是本机的 AI 运维助手，可以直接执行命令。我在用 macOS 桌面应用「提示词助手」（Electron 菜单栏工具），
+它通过本机的 lark-cli（飞书官方命令行）读取我自己的飞书多维表。现在它的环境自检没过，
+请帮我排查修复，并引导我完成飞书登录授权。
+
+【环境自检结果】（应用 v${app.getVersion()}，${os.type()} ${os.release()} ${process.arch}，身份 ${cfg.identity || 'user'}）
+- lark-cli：${st('cli')}
+- 飞书登录态：${st('auth')}
+- 多维表数据源：${st('base')}
+- 媒体缓存目录：${st('mediaDir')}
+
+【本机关键路径】
+- 应用目录：${app.getAppPath()}
+- 用户数据目录：${app.getPath('userData')}（里面有配置 config.json 和日志 app.log）
+- 当前 lark-cli 路径配置：${cfg.larkCliPath || '（默认：PATH 里的 lark-cli）'}
+
+【应用日志尾部（最近 25 行）】
+${logTail}
+
+【请按顺序执行，每步失败先把完整报错贴出来分析，不要盲目重试】
+1. 诊断 lark-cli：运行 ${bt}lark-cli auth status${bt}（PATH 里没有就试上面配置的路径）。
+   - 输出 JSON 且无报错 → 直接跳到第 4 步。
+   - 提示 command not found / 输出非 JSON 的错误堆栈 → 未安装或已损坏，走第 2 步。
+2. 安装或修复 lark-cli（优先方案 A，免 Node 免 npm）：
+   - 方案 A（官方单文件版，国内镜像）：
+     先 GET https://registry.npmmirror.com/@larksuite/cli/latest 拿最新版本号 V；
+     下载 https://registry.npmmirror.com/-/binary/lark-cli/v{V}/lark-cli-{V}-darwin-${archName}.tar.gz；
+     用同目录 checksums.txt 里的官方 sha256 校验下载文件一致；
+     解压出 lark-cli，chmod +x 后放到 ${path.dirname(portableExe)} 目录下（不存在就新建）。
+   - 方案 B（本机已有 Node/npm 时）：${bt}npm install -g @larksuite/cli${bt}。
+3. 验证可用：运行 ${bt}<lark-cli路径> auth status${bt}，能输出 JSON 即修复成功。
+4. 登录飞书（device flow，浏览器里需要我本人点授权）：
+   a. 运行 ${bt}<lark-cli路径> auth login --no-wait --json --domain base,drive${bt}
+   b. 从返回 JSON 的 verification_url 字段拿到授权链接，用 ${bt}open "<链接>"${bt} 帮我打开浏览器，提醒我去点授权
+   c. 我完成授权后，运行 ${bt}<lark-cli路径> auth login --device-code <a 步返回里的 device_code> --json${bt} 完成登录
+   （device_code 十分钟内有效，过期就从 a 重来；本应用用 user 身份登录）
+5. 如果走的是方案 A，把 ${cfgFile} 里的 "larkCliPath" 改成 "${portableExe}"
+   （改前先备份原文件）。
+6. 收尾：再运行一次 ${bt}<lark-cli路径> auth status${bt}，确认 identities.user.status 是 ready，
+   然后告诉我：回到应用 → 设置 → 数据源 → 环境自检 → 点「重新检查」。
+
+【约束】
+- 注意 GUI 应用的 PATH 不含 /opt/homebrew/bin、~/.npm-global/bin 等用户目录，
+  排查时优先用绝对路径或 ${bt}/bin/zsh -lc${bt} 模拟登录 shell。
+- 不要删除或修改用户数据目录里的其他文件（cache.json 是我已同步的提示词数据）。
+- 不要改应用目录（.app 包）下的任何程序文件。`
+    );
+  }
   return (
 `你是本机的 AI 运维助手，可以直接执行命令。我在用 Windows 桌面应用「提示词助手」（Electron 托盘工具），
 它通过本机的 lark-cli（飞书官方命令行）读取我自己的飞书多维表。现在它的环境自检没过，

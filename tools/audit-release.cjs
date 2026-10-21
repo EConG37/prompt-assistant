@@ -8,10 +8,16 @@ const asar = require('@electron/asar');
 const { defaultConfig } = require('../lib/config');
 const root = path.join(__dirname, '..');
 const version = require('../package.json').version;
+function option(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) return null;
+  if (!process.argv[index + 1] || process.argv[index + 1].startsWith('--')) throw new Error('Missing value for ' + name);
+  return path.resolve(process.argv[index + 1]);
+}
 const release = path.join(root, 'dist', version);
-const archive = path.join(release, 'win-unpacked', 'resources', 'app.asar');
+const archive = option('--archive') || path.join(release, 'win-unpacked', 'resources', 'app.asar');
 const includeHistory = process.argv.includes('--history');
-const reportPath = path.join(root, 'output', 'privacy', includeHistory ? 'release-history-audit.json' : 'release-audit.json');
+const reportPath = option('--report') || path.join(root, 'output', 'privacy', includeHistory ? 'release-history-audit.json' : 'release-audit.json');
 const findings = [];
 const auditedContents = new Set();
 const privateValues = new Set();
@@ -63,7 +69,9 @@ function audit(scope, file, bytes) {
   if (/\.(?:js|cjs|json|html|css|md|ps1|bat|vbs|txt)$/i.test(file) || !path.extname(file)) {
     const text = bytes.toString('utf8');
     for (const [kind, pattern] of checks) if (pattern.test(text)) findings.push({ scope, file, kind });
-    const emails = text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+    // Retina 文件名（如 trayTemplate@2x.png）不是邮箱。
+    const emails = (text.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [])
+      .filter(email => !/@[2-9]x\.(?:png|jpe?g|webp|avif|svg)$/i.test(email));
     if (!file.startsWith('node_modules/') && emails.some(email => !/@(?:users\.noreply\.github\.com|example\.(?:com|org|net))$/i.test(email))) findings.push({ scope, file, kind: 'email-address' });
   }
   if (/\.png$/i.test(file) && bytes.length >= 8 && bytes.readUInt32BE(0) === 0x89504e47) {
@@ -114,7 +122,7 @@ if (includeHistory) {
     }
   }
 }
-const installer = path.join(release, `提示词助手 Setup ${version}.exe`);
+const installer = option('--artifact') || path.join(release, `提示词助手 Setup ${version}.exe`);
 const extractedArchive = path.join(root, 'output', 'privacy', version, 'payload', 'resources', 'app.asar');
 const installerPayloadVerified = fs.existsSync(extractedArchive) && fs.readFileSync(extractedArchive).equals(fs.readFileSync(archive));
 if (fs.existsSync(extractedArchive) && !installerPayloadVerified) findings.push({ scope: 'installer', file: 'resources/app.asar', kind: 'extracted-payload-mismatch' });

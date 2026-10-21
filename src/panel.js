@@ -375,6 +375,9 @@ function bind() {
     queuePreview(e.target.closest('#list .card'));
   });
   document.addEventListener('focusout', () => { if (!document.hasFocus()) scheduleCollapse(); });
+  // 悬停展开抑制键：Windows 认 Ctrl，mac 认 Cmd（按住移过把手不弹面板，方便抄屏幕右侧内容）
+  const isMac = /Mac/i.test(navigator.platform);
+  const suppressKey = (e) => !!(e.ctrlKey || (isMac && e.metaKey));
   let ctrlDown = false;
   const openFromHandle = () => {
     handleHover = true;
@@ -382,11 +385,12 @@ function bind() {
     if (cfg.panel?.hoverExpand !== false) requestExpand(false);
   };
   window.addEventListener('mousemove', (e) => {
-    if (ctrlDown === !!e.ctrlKey) return;
-    ctrlDown = !!e.ctrlKey;
+    const down = suppressKey(e);
+    if (ctrlDown === down) return;
+    ctrlDown = down;
     if (!ctrlDown && handleHover) openFromHandle();
   });
-  $('#handle').addEventListener('mouseenter', (e) => { ctrlDown = !!e.ctrlKey; openFromHandle(); });
+  $('#handle').addEventListener('mouseenter', (e) => { ctrlDown = suppressKey(e); openFromHandle(); });
   $('#handle').addEventListener('mouseleave', () => { handleHover = false; suppressHandleUntilLeave = false; });
   window.api.on('panel:handle-enter', openFromHandle);
   $('#btnSync').addEventListener('click', () => (tab === 'skills' ? window.api.scanSkills() : window.api.syncNow()).then((r) => { if (r?.ok === false) showToast(tab === 'skills' ? '部分 Skill 未读取，请在设置中查看' : r.error || '同步失败，请检查数据源'); }).catch(() => showToast(tab === 'skills' ? '扫描失败，请检查技能目录' : '同步失败，请检查数据源')));

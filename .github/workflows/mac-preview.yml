@@ -1,0 +1,74 @@
+name: Mac preview
+
+on:
+  push:
+    tags: ['v*-beta.*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mac-preview-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  mac-preview:
+    runs-on: macos-15
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Test deletion and local Skill management
+        run: node --test tools/feishu-deletion.test.cjs tools/prompt-deletion.test.cjs tools/skills.test.cjs
+      - name: Build Apple Silicon preview
+        run: npm run dist:mac -- --publish never --config.directories.output=dist/mac-preview
+      - name: Install isolated smoke-test tooling
+        run: npm install --prefix output/ci --no-save --package-lock=false --ignore-scripts playwright-core@1.56.1
+      - name: Verify packaged app and launch on Mac
+        run: node tools/check-mac-package.cjs
+        env:
+          PLAYWRIGHT_CORE_PATH: ${{ github.workspace }}/output/ci/node_modules/playwright-core
+      - name: Audit released application resources
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          node tools/audit-release.cjs \
+            --archive 'dist/mac-preview/mac-arm64/提示词助手.app/Contents/Resources/app.asar' \
+            --artifact "dist/mac-preview/提示词助手-${version}-mac-arm64.dmg" \
+            --report output/privacy/mac-release-audit.json
+      - name: Save build and verification results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mac-preview
+          path: |
+            dist/mac-preview/*.dmg
+            dist/mac-preview/*.zip
+            output/privacy/mac-release-audit.json
+            output/playwright/mac-package/*.png
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish Mac preview downloads
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          test "$GITHUB_REF_NAME" = "v${version}"
+          shasum -a 256 dist/mac-preview/*.dmg dist/mac-preview/*.zip > dist/mac-preview/SHA256SUMS.txt
+          gh release create "$GITHUB_REF_NAME" \
+            dist/mac-preview/*.dmg dist/mac-preview/*.zip dist/mac-preview/SHA256SUMS.txt \
+            --verify-tag --prerelease --latest=false \
+            --title "提示词助手 ${version} · Mac 体验版" \
+            --notes-file docs/mac-preview-release.md

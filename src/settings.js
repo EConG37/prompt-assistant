@@ -13,6 +13,20 @@ let promptSelection, filteredPrompts = [];
 let skillQuery = '';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const IS_MAC = /Mac/i.test(navigator.platform);
+
+// 平台相关文案：路径提示 / 自启叫法，按实际系统显示
+function applyPlatformTexts() {
+  if (!IS_MAC) return;
+  const mediaDir = $('#mediaDir');
+  if (mediaDir) mediaDir.placeholder = '默认：~/Library/Application Support/提示词助手/media';
+  const hint = $('#mediaDirHint');
+  if (hint) hint.textContent = '预览图与视频下载存放的目录，可改到任意位置（如 ~/Movies/缓存）。留空时使用应用缓存目录（~/Library/Application Support/提示词助手/media）。';
+  const loginLabel = $('#launchAtLoginLabel');
+  if (loginLabel) loginLabel.textContent = '登录 Mac 时自动启动';
+  const ud = $('#userDataPath');
+  if (ud) ud.textContent = '~/Library/Application Support/提示词助手';
+}
 const PALETTE = [
   ['#e8efff', '#3565d8'], ['#e9f8ef', '#1f9254'], ['#fff3e5', '#c26a10'],
   ['#f3eaff', '#7a3fd1'], ['#ffe9ee', '#cf3a63'], ['#e5f6f8', '#0f7f8c'],
@@ -616,4 +630,4 @@ function bind() {
 }
 
 window.addEventListener('unhandledrejection', (e) => console.error('[settings] UNHANDLED:', e.reason));
-window.addEventListener('DOMContentLoaded', async () => { bind(); await loadAll(); });
+window.addEventListener('DOMContentLoaded', async () => { applyPlatformTexts(); bind(); await loadAll(); });
