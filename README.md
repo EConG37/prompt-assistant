@@ -147,13 +147,28 @@ tools/gen-icon.js  托盘图标生成（纯 Node 绘制 PNG）
 - 代码默认值不含任何个人多维表地址/表 ID（首次使用由使用者自行粘贴链接）；
 - 启动脚本（vbs/bat）使用自身所在目录的相对路径，放到任何位置都能运行。
 
+## macOS 支持
+
+本应用同时支持 macOS（Apple Silicon）：
+
+- **打包**：`npx electron-builder --mac` 产出 dmg / zip；应用图标需 1024px（electron-builder 自动转 icns）
+- **菜单栏**：自动加载 `assets/trayTemplate.png` 模板图标（随系统深浅色自动反色）；
+  修改 logo 后运行 `node tools/gen-tray-template.js` 重新生成（白色字形转为镂空）
+- **Dock**：以 `LSUIElement` 代理应用运行（只有菜单栏图标，不占 Dock）
+- **lark-cli 探测**：图形应用继承的 PATH 较窄，应用会自动补搜 `/opt/homebrew/bin`、
+  `~/.npm-global/bin` 等常见位置，并为子进程注入增强 PATH（`#!/usr/bin/env node` 脚本可正常启动）
+- **开机自启**：走 macOS 登录项（路径不加引号）；「开机自动启动」在 mac 上显示为「登录 Mac 时自动启动」
+- **首次打开**：未做开发者证书签名时，右键 .app →「打开」→ 再点「打开」
+
 ## 开发
 
 界面字体统一使用随应用打包的阿里巴巴普惠体 2.0（Regular / Medium / SemiBold / Bold），覆盖面板、预览、设置和表单，离线加载。原版字体与版权信息位于 `assets/fonts/`，字体声明参见该目录的 `NOTICE.md`，不改变用户系统字体。运行 `node tools/check-fonts.cjs`（使用下方 Playwright 环境）可检查三个窗口实际渲染的字体及四字重离线加载；截图位于 `output/playwright/fonts/`。
 
 ```bash
 node tools/gen-icon.js   # 重新生成托盘图标
+node tools/gen-tray-template.js  # 生成 macOS 菜单栏模板图标（改 logo 后）
 npm start                # 开发运行（--enable-logging 可看渲染进程日志）
+npx electron-builder --mac      # 打 macOS dmg/zip（arm64）
 ```
 
 图库回归检查：已有 `playwright-core` 时运行 `node tools/check-gallery.cjs`，或先设置 `PLAYWRIGHT_CORE_PATH` 指向其安装目录。脚本在 `output/playwright/gallery-profile` 创建隔离数据，用实际 Electron 窗口验证布局、搜索、收藏、预览与收回，输出截图；不会修改正式配置或系统剪贴板。本地存在视频缓存时会额外检查播放与停止。

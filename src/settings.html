@@ -107,8 +107,8 @@
       <h3>存储与启动</h3>
       <div class="row"><label class="ck"><input id="mediaPersist" type="checkbox" /> 预览图/视频缓存到磁盘（关闭=无痕：临时目录存放，退出自动清空）</label></div>
       <div class="row"><label>缓存位置</label><input id="mediaDir" class="mid" placeholder="默认：安装目录\cache\media" /><button id="btnPickDir" class="btn">更改…</button><button id="btnClearCache" class="btn sm">清空缓存</button><span id="cacheMsg" class="msg"></span></div>
-      <p class="hint">预览图与视频下载存放的目录，可改到任意盘（如 D:\缓存）。留空时 Windows 用安装目录下的 cache\media，mac 用应用缓存目录。</p>
-      <div class="row"><label class="ck"><input id="launchAtLogin" type="checkbox" /> 开机自动启动</label></div>
+      <p class="hint" id="mediaDirHint">预览图与视频下载存放的目录，可改到任意盘（如 D:\缓存）。留空时 Windows 用安装目录下的 cache\media，mac 用应用缓存目录。</p>
+      <div class="row"><label class="ck"><input id="launchAtLogin" type="checkbox" /><span id="launchAtLoginLabel">开机自动启动</span></label></div>
       </div>
     </section>
 
@@ -240,7 +240,7 @@
       <h3>七、数据都存在哪里</h3>
       <ul>
         <li>提示词 / 图片 / 视频原文：<b>你的飞书多维表</b>（侧栏新增提示词直接保存到这里，断网时用上次缓存）；</li>
-        <li>设置、加星、复制统计：本机系统应用数据目录 <code>%AppData%\提示词助手</code>（不随安装包分发）；</li>
+        <li>设置、加星、复制统计：本机系统应用数据目录 <code id="userDataPath">%AppData%\提示词助手</code>（不随安装包分发）；</li>
         <li>预览图 / 视频缓存：默认安装目录 <code>cache\media</code>，可在「外观与行为」更改或一键清空；
         关闭「缓存到磁盘」即无痕模式，退出自动清空。</li>
       </ul>

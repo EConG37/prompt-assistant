@@ -7,7 +7,10 @@
   "scripts": {
     "start": "electron .",
     "gen-icon": "node tools/apply-logo-icon.js",
-    "dist": "electron-builder --win nsis"
+    "gen-tray-template": "node tools/gen-tray-template.js",
+    "dist": "electron-builder --win nsis --mac",
+    "dist:win": "electron-builder --win nsis --x64",
+    "dist:mac": "electron-builder --mac"
   },
   "build": {
     "appId": "com.promptassistant.tray",
@@ -28,8 +31,31 @@
       "!app.log",
       "!start.bat",
       "!启动提示词助手.vbs",
+      "!启动提示词助手.command",
       "!data-test-imgs/**"
     ],
+    "mac": {
+      "icon": "assets/icon.png",
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["arm64"]
+        }
+      ],
+      "extendInfo": {
+        "LSUIElement": true
+      },
+      "artifactName": "PromptAssistant-${version}-mac-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "提示词助手 ${version}",
+      "artifactName": "提示词助手-${version}-mac-${arch}.dmg"
+    },
     "win": {
       "icon": "assets/icon.png",
       "target": [

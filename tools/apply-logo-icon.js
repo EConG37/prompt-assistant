@@ -189,7 +189,8 @@ console.log(`decoded logo.png ${w}x${h}`);
 const cleared = whiteBackgroundToTransparent(w, h, rgba);
 console.log(`background cleared: ${cleared} px (${((cleared / (w * h)) * 100).toFixed(1)}%)`);
 
-const sizes = [256, 32];
+// icon.png 用 1024：macOS 打包要求 ≥512 才能自动转 icns（Windows 的多尺寸 ico 另行生成）
+const sizes = [1024, 32];
 for (const size of sizes) {
   const out = downscale(w, h, rgba, size, size);
   const file = path.join(ROOT, 'assets', size === 32 ? 'tray.png' : 'icon.png');
