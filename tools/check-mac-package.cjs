@@ -9,7 +9,7 @@ if (process.platform !== 'darwin') throw Error('Run the packaged Mac smoke test 
 fs.mkdirSync(output, { recursive: true });
 const unpacked = path.join(dist, 'mac-arm64/提示词助手.app');
 const zip = path.join(dist, `PromptAssistant-${version}-mac-arm64.zip`);
-const dmg = path.join(dist, `提示词助手-${version}-mac-arm64.dmg`);
+const dmg = path.join(dist, `PromptAssistant-${version}-mac-arm64.dmg`);
 const extracted = fs.mkdtempSync(path.join(output, 'zip-'));
 cp.execFileSync('ditto', ['-xk', zip, extracted]);
 const bundle = path.join(extracted, '提示词助手.app');

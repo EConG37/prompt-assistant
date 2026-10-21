@@ -61,7 +61,7 @@
     },
     "dmg": {
       "title": "提示词助手 ${version}",
-      "artifactName": "提示词助手-${version}-mac-${arch}.dmg"
+      "artifactName": "PromptAssistant-${version}-mac-${arch}.dmg"
     },
     "win": {
       "icon": "assets/icon.png",

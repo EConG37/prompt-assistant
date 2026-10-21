@@ -45,7 +45,7 @@ jobs:
           version=$(node -p "require('./package.json').version")
           node tools/audit-release.cjs \
             --archive 'dist/mac-preview/mac-arm64/提示词助手.app/Contents/Resources/app.asar' \
-            --artifact "dist/mac-preview/提示词助手-${version}-mac-arm64.dmg" \
+            --artifact "dist/mac-preview/PromptAssistant-${version}-mac-arm64.dmg" \
             --report output/privacy/mac-release-audit.json
       - name: Save build and verification results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -66,7 +66,7 @@ jobs:
         run: |
           version=$(node -p "require('./package.json').version")
           test "$GITHUB_REF_NAME" = "v${version}"
-          shasum -a 256 dist/mac-preview/*.dmg dist/mac-preview/*.zip > dist/mac-preview/SHA256SUMS.txt
+          (cd dist/mac-preview && shasum -a 256 *.dmg *.zip > SHA256SUMS.txt)
           gh release create "$GITHUB_REF_NAME" \
             dist/mac-preview/*.dmg dist/mac-preview/*.zip dist/mac-preview/SHA256SUMS.txt \
             --verify-tag --prerelease --latest=false \
